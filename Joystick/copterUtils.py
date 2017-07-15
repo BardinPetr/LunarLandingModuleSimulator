@@ -1,36 +1,64 @@
-# RC MIN/MAX 1000/2000
-# Comment this to run
-#Script = None
-#cs = None
-
-import sys, time
-sys.path.append(r"c:\Users\Petr\Desktop\LunarLandingModuleSimulator\Joystick")
-
-import clr
-import MissionPlanner
-clr.AddReference("MAVLink")
-from System import Byte
-import MAVLink
-from MAVLink import mavlink_command_long_t
-import MAVLink
+import time
 
 class CopterUtils:
-    def __init__(self, s, cs, wGPS = False):
-        self.s = s
-        self.cs = cs
-        for chan in range(1, 9):
-            s.SendRC(chan, 1500, False)
-            s.SendRC(3, s.GetParam('RC3_MIN'), True)
+    def __init__(self, rc, server):
+        self.rc = rc
+        self.server = server
+        for chan in range(1, 5):
+            if chan == 3:
+                continue
+            self.rc.SendRC(chan, 1500, False)
+        self.rc.SendRC(3, 1000, True)
 
-        while cs.lat == 0 and wGPS:
-            print('Waiting for GPS')
-            s.Sleep(1000)
+        self.armed = False
 
-    def arm(self):
-        MAV.doARM(True)
+    def arm(self, mode = "STABILIZE"):
+        #self.server.send(mode.lower())
+        print('Arming')
+
+        self.rc.SendRC(1, 1500, False)
+        self.rc.SendRC(2, 1500, False)
+        self.rc.SendRC(3, 1000, False)
+        self.rc.SendRC(4, 2000, True)
+
+        time.sleep(6)
+
+        self.rc.SendRC(1, 1500, False)
+        self.rc.SendRC(2, 1500, False)
+        self.rc.SendRC(3, 1000, False)
+        self.rc.SendRC(4, 1500, True)
+
+        #self.server.send("arm")
+        print('Armed')
+        self.armed = True
 
     def disarm(self):
-        MAV.doARM(False)
+        #self.setThr(1000)
+        #self.server.send("stabilize")
+        print('Disarming')
 
-    def delay(self, w):
-        self.s.Sleep(w)
+        self.rc.SendRC(1, 1500, False)
+        self.rc.SendRC(2, 1500, False)
+        self.rc.SendRC(3, 970, False)
+        self.rc.SendRC(4, 2000, True)
+
+        time.sleep(10)
+
+        self.rc.SendRC(1, 1500, False)
+        self.rc.SendRC(2, 1500, False)
+        self.rc.SendRC(3, 970, False)
+        self.rc.SendRC(4, 1500, True)
+
+        #self.server.send("disarm")
+        print('Disarmed')
+        self.armed = False
+
+    def RCcal(self):
+        for chan in range(1, 15):
+            for i in range(1000, 2001, 100):
+                print("{0}.{1}".format(chan, i))
+                self.rc.SendRC(chan, i, True)
+                time.sleep(50)
+
+    def setThr(self, e=1500):
+        self.rc.SendRC(3, e, False)

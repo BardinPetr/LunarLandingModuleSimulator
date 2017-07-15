@@ -1,9 +1,12 @@
+from multiprocessing import Process, Pipe, Queue
+from subprocess import Popen, PIPE
 from joystick import Joystick
-import socket
-import time
+import multiprocessing
 import threading
-import json
+import socket
 import signal
+import time
+import json
 
 millis = lambda: int(round(time.time() * 1000))
 
@@ -19,8 +22,6 @@ class Killer:
 class JServer:
     def __init__(self, dict):
         print ('Starting server')
-
-        self.killer = Killer()
 
         self.s = None
         self.dict = dict
@@ -42,7 +43,7 @@ class JServer:
         self.d = False
 
         self.runt = threading.Thread(target=self.run)
-        #self.runt.start()
+        self.runt.start()
 
         self.pingt = threading.Thread(target=self.timeout)
         self.pingt.start()
@@ -51,10 +52,7 @@ class JServer:
 
     def timeout(self):
         while self.r:
-            if self.killer.kill_now:
-                self.r = False
-                self.pingt.join()
-                break
+
             if (millis() - self.tm) > 5000 and self.conn != None and not self.d:
                 self.d = True
                 try:
@@ -70,7 +68,7 @@ class JServer:
         self.d = True
         try:
             self.conn, self.addr = self.s.accept()
-            print('Connected from', self.addr)
+            print('Connected')
             self.tm = millis()
             self.d = False
         except:
@@ -131,6 +129,9 @@ class JServer:
 
     def isCliennt(self):
         return self.conn != None
+
+    def parseButtons(self, e):
+        return {"joy": e[:4], "b1": e[5], "b2": e[4]}
 
     def __delete__(self, instance):
         try:

@@ -10,6 +10,13 @@ from MAVLink import mavlink_command_long_t
 import MAVLink
 from JClient import JClient
 
+rc.SendRC(1, j, False)
+rc.SendRC(2, i, False)
+rc.SendRC(3, thr, False)
+rc.SendRC(4, z, True)
+
+
+'''
 ####################################
 def translate(value, leftMin, leftMax, rightMin, rightMax):
     leftSpan = leftMax - leftMin
@@ -63,10 +70,9 @@ class CopterUtils:
 
     def RCcal(self):
         for chan in range(1, 9):
-            for i in range(1000, 2001, 100):
-                print("{0}.{1}".format(chan, i))
-                Script.SendRC(chan, i, True)
-                self.delay(50)
+            Script.SendRC(chan, 1000, True)
+            self.delay(50)
+            Script.SendRC(chan, 2000, True)
 
     def setThr(self, e=1500):
         Script.SendRC(3, e, True)
@@ -140,3 +146,4 @@ while 1:
     cu.delay(20)
 
 del cl
+'''

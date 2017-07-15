@@ -1,13 +1,16 @@
 import sys, time
 sys.path.append(r"c:\Users\Petr\Desktop\LunarLandingModuleSimulator\Joystick")
+sys.path.append(r"c:\Users\Petr\Anaconda2\Lib")
+sys.path.append(r"c:\Users\Petr\Anaconda2\Lib\site-packages")
 
 import clr
-import MissionPlanner
 clr.AddReference("MAVLink")
-from System import Byte
-import MAVLink
+
 from MAVLink import mavlink_command_long_t
+from System import Byte
+import MissionPlanner
 import MAVLink
+
 from JClient import JClient
 
 ####################################
@@ -16,14 +19,15 @@ def translate(value, leftMin, leftMax, rightMin, rightMax):
     rightSpan = rightMax - rightMin
     valueScaled = float(value - leftMin) / float(leftSpan)
     return rightMin + (valueScaled * rightSpan)
-
+'''
 class CopterUtils:
-    def __init__(self, wGPS = False):
+    def __init__(self, rc, wGPS = False):
+        self.rc = rc
         for chan in range(1, 9):
             if chan == 3:
                 continue
-            Script.SendRC(chan, 1500, False)
-        Script.SendRC(3, 1000, True)
+            self.rc.SendRC(chan, 1500, False)
+        self.rc.SendRC(3, 1000, True)
 
         while cs.lat == 0 and wGPS:
             print('Waiting for GPS')
@@ -65,22 +69,22 @@ class CopterUtils:
         for chan in range(1, 15):
             for i in range(1000, 2001, 100):
                 print("{0}.{1}".format(chan, i))
-                Script.SendRC(chan, i, True)
+                self.rc.SendRC(chan, i, True)
                 self.delay(100)
 
     def setThr(self, e=1500):
-        Script.SendRC(3, e, True)
+        self.rc.SendRC(3, e, True)
 
     def parseButtons(self, e):
         return {"joy":e[:4], "b1": e[5], "b2": e[4]}
 
-
+'''
 ####################################
 
 print ('Script started')
 
-cu = CopterUtils(False)
-cl = JClient({b"arm": cu.arm, b"disarm": cu.disarm, b"land": cu.land, b"takeoff": cu.takeoff})
+#cu = CopterUtils(False)
+cl = JClient({b"arm": lambda: MAV.doARM(True), b"disarm": lambda: MAV.doARM(False)})
 
 #while 1:
 #    cu.RCcal()
@@ -98,6 +102,7 @@ print('Started')
 '''
 
 while 1:
+    '''
     st = time.time()
     axis = cl.getAxis()
     btns = cl.getBtns()
@@ -111,12 +116,12 @@ while 1:
     #y = translate(axis[1], -1.0, 1.0, 1000.0, 2000.0)
     #z = translate(axis[2], -1.0, 1.0, 1000.0, 2000.0)
 
-    #Script.SendRC(1, x, False)
-    #Script.SendRC(2, y, True)
-    #Script.SendRC(4, z, False)
+    #self.rc.SendRC(1, x, False)
+    #self.rc.SendRC(2, y, True)
+    #self.rc.SendRC(4, z, False)
 
     #f = translate(0.0 if axis[1] >= 0.0 else axis[1], -1.0, 0.0, 2000.0, 1300.0)
-    #Script.SendRC(3, f, True)
+    #self.rc.SendRC(3, f, True)
 
     if b["b1"] and b["joy"][0] and not cu.armed:
         cu.arm()
@@ -148,10 +153,10 @@ while 1:
 
             z = translate(axis[2], -1.0, 1.0, 1000.0, 2000.0)
 
-            Script.SendRC(1, j, False)
-            Script.SendRC(2, i, False)
-            Script.SendRC(3, thr, False)
-            Script.SendRC(4, z, True)
+            rc.SendRC(1, j, False)
+            rc.SendRC(2, i, False)
+            rc.SendRC(3, thr, False)
+            rc.SendRC(4, z, True)
         elif mode == 2:
             if b["b1"]:
                 cu.setThr(1700)
@@ -159,10 +164,8 @@ while 1:
                 cu.setThr(1300)
             else:
                 cu.setThr()
-
+    '''
     cl.sendTelemetry({'alt': cs.alt, 'roll': -cs.roll, 'pitch': cs.pitch, 'yaw': cs.yaw, 'tg': 40})
-    cu.delay(20)
-
-    print 1 / (time.time()-st)
+    Script.Sleep(20)
 
 del cl

@@ -25,8 +25,8 @@ class JClient:
             self.f = False
             self.__init__(cb)
 
-        #self.getdatathread = Thread(ThreadStart(self.getDataAsync))
-        #self.getdatathread.Start()
+        self.getdatathread = Thread(ThreadStart(self.getDataAsync))
+        self.getdatathread.Start()
 
     def getAxis(self):
         if not self.f:
@@ -67,11 +67,10 @@ class JClient:
                 print (''), ''
                 continue
             try:
-                pass
-                #data = self.s.recv(5000)
-                #print(data)
-                #if data in self.cb:
-                #   self.cb[data]()
+                req = self.s.recv(1000).decode("utf-8")
+                print('> {}'.format(req))
+                if req in self.cb:
+                    self.cb[req]()
             except:
                 print('getDataAsync - Exception')
 
