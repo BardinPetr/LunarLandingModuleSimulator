@@ -12,7 +12,9 @@ class RC:
         self.chan[id] = str(val)
 
         if writenow:
-            self.ser.write(('@'.join(self.chan[1:]) + '\r').encode('utf-8'))
+            e = ("!" + '@'.join(self.chan[1:]) + '\r').encode('utf-8')
+            print e
+            self.ser.write(e)
 
     def SendRC_s(self, id, val, writenow = False):
         val = self.translate(val, -1000, 1000, 1000, 2000)

@@ -84,7 +84,7 @@ class CopterUtils:
 print ('Script started')
 
 #cu = CopterUtils(False)
-cl = JClient({b"arm": lambda: MAV.doARM(True), b"disarm": lambda: MAV.doARM(False)})
+cl = JClient({b"arm": lambda: MAV.doARM(True), b"disarm": lambda: MAV.doARM(False), b"stabilize": lambda: Script.ChangeMode("STABILIZE")})
 
 #while 1:
 #    cu.RCcal()
@@ -165,7 +165,7 @@ while 1:
             else:
                 cu.setThr()
     '''
-    cl.sendTelemetry({'alt': cs.alt, 'roll': -cs.roll, 'pitch': cs.pitch, 'yaw': cs.yaw, 'tg': 40})
+    cl.sendTelemetry({'armed': cs.armed, 'alt': cs.alt, 'roll': -cs.roll, 'pitch': cs.pitch, 'yaw': cs.yaw, 'tg': 40})
     Script.Sleep(20)
 
 del cl
