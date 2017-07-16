@@ -6,10 +6,8 @@
 #define MIN   1000
 #define MAX   2000
 
-#include <SimpleTimer.h>
 #include <Servo.h>
 
-SimpleTimer timer;
 Servo chan[8];
 
 String input = "";
@@ -21,32 +19,53 @@ int c = 1000;
 int d = 1500;
 
 void setup() {
-  chan[ PITCH].attach(5);
   chan[ ROLL ].attach(3);
-  chan[ THR  ].attach(6);
+  chan[ PITCH].attach(9);
+  chan[ THR  ].attach(10);
   chan[ YAW  ].attach(11);
 
   Serial.begin(57600);
   input.reserve(200);
 
-  timer.setInterval(1000, p);
+  //TCCR2B = (TCCR2B & 0b11111000) | 0x07;
+  //analogWrite(11, 255);
+
+  //while(1){}
 }
 
 void loop() {
-  timer.run();
   if (stringComplete) {
-    a = getValue(input, '@', 0).toInt();
-    b = getValue(input, '@', 1).toInt();
-    c = getValue(input, '@', 2).toInt();
-    d = getValue(input, '@', 3).toInt();
-    Serial.print(a);
-    Serial.print(" ");
-    Serial.print(b);
-    Serial.print(" ");
-    Serial.print(c);
-    Serial.print(" ");
-    Serial.println(d);
-    
+    if (input.startsWith("!")) {
+      input = input.substring(1, 21);
+      Serial.println(input);
+      int _a = getValue(input, '@', 0).toInt();
+      int _b = getValue(input, '@', 1).toInt();
+      int _c = getValue(input, '@', 2).toInt();
+      int _d = getValue(input, '@', 3).toInt();
+      //Serial.print(_a);
+      //Serial.print(" ");
+      //Serial.print(_b);
+      //Serial.print(" ");
+      //Serial.print(_c);
+      //Serial.print(" ");
+      //Serial.println(_d);
+      if (_a >= 1000 && _a <= 2000 && _b >= 1000 && _b <= 2000 && _c >= 1000 && _c <= 2000 && _d >= 1000 && _d <= 2000) {
+        a = _a;
+        b = _b;
+        c = _c;
+        d = _d;
+      }
+    }
+
+    //Serial.print(a);
+    //Serial.print(" ");
+    //Serial.print(b);
+    //Serial.print(" ");
+    //Serial.print(c);
+    //Serial.print(" ");
+    //Serial.println(d);
+    //Serial.println();
+
     input = "";
     stringComplete = false;
   }
@@ -55,11 +74,11 @@ void loop() {
     setRC(ROLL,   b);
     setRC(THR,    c);
     setRC(YAW,    d);
-    delay(30);
+    delay(10);
   }
 }
 
-void arm(){
+void arm() {
   setRC(YAW, 2000);
   setRC(THR, 1000);
   delay(4000);
@@ -89,7 +108,7 @@ void setRC(int id, int f) {
 }
 
 void p() {
-  Serial.println("#");
+  //Serial.println("#");
 }
 
 void serialEvent() {

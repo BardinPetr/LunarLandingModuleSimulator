@@ -13,7 +13,7 @@ class CopterUtils:
         self.armed = False
 
     def arm(self, mode = "STABILIZE"):
-        #self.server.send(mode.lower())
+        self.server.send(mode.lower())
         print('Arming')
 
         self.rc.SendRC(1, 1500, False)
@@ -21,22 +21,25 @@ class CopterUtils:
         self.rc.SendRC(3, 1000, False)
         self.rc.SendRC(4, 2000, True)
 
-        time.sleep(6)
+        time.sleep(4)
 
         self.rc.SendRC(1, 1500, False)
         self.rc.SendRC(2, 1500, False)
         self.rc.SendRC(3, 1000, False)
         self.rc.SendRC(4, 1500, True)
 
-        #self.server.send("arm")
         print('Armed')
-        self.armed = True
+        #self.armed = True
 
     def disarm(self):
         #self.setThr(1000)
         #self.server.send("stabilize")
         print('Disarming')
-
+        self.rc.SendRC(1, 1500, False)
+        self.rc.SendRC(2, 1500, False)
+        self.rc.SendRC(3, 970, False)
+        self.rc.SendRC(4, 1500, True)
+        '''
         self.rc.SendRC(1, 1500, False)
         self.rc.SendRC(2, 1500, False)
         self.rc.SendRC(3, 970, False)
@@ -48,10 +51,10 @@ class CopterUtils:
         self.rc.SendRC(2, 1500, False)
         self.rc.SendRC(3, 970, False)
         self.rc.SendRC(4, 1500, True)
-
-        #self.server.send("disarm")
+        '''
+        self.server.send("disarm")
         print('Disarmed')
-        self.armed = False
+        #self.armed = False
 
     def RCcal(self):
         for chan in range(1, 15):
