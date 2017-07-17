@@ -1,6 +1,7 @@
 from multiprocessing import Process, Pipe, Queue
 from subprocess import Popen, PIPE
 from joystick import Joystick
+import server_telem
 import multiprocessing
 import threading
 import socket
@@ -29,9 +30,6 @@ class JServer:
             self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.s.bind(('127.0.0.1', 59667))
             self.s.listen(1)
-            #self.ts = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            #self.ts.bind(('127.0.0.1', 59666))
-            #self.ts.listen(1)
         except:
             print('Failed to start Server!')
             self.__init__(dict)
@@ -52,7 +50,6 @@ class JServer:
 
     def timeout(self):
         while self.r:
-
             if (millis() - self.tm) > 5000 and self.conn != None and not self.d:
                 self.d = True
                 try:
@@ -61,7 +58,7 @@ class JServer:
                     self.conn = None
                     self.d = False
                 except:
-                    print(''), ''
+                    pass
                 print('CLIENT TIMEOUT. DISCONNECTING')
 
     def accept(self):
@@ -78,15 +75,13 @@ class JServer:
         while self.r:
             if self.d:
                 continue
-
             if self.conn == None and not self.d:
                 self.accept()
             else:
                 if self.conn == None:
                     continue
                 try:
-                    #self.conn.send(b'1111')
-                    req = self.conn.recv(1000).decode("utf-8")
+                    req = self.conn.recv(2000).decode("utf-8")
                     self.tm = millis()
                     if req == 'getBtns':
                         self.conn.send('$'.join(map(str, self.joy.getButtons())).encode('utf-8'))
@@ -98,15 +93,20 @@ class JServer:
                     elif req == 'exit':
                         self.r = False
                         break
+                    elif req.find('telemx') != -1 and req.find('@') != -1 and not req.find(':') != -1:
+                        try:
+                            req = req[7:]
+                            server_telem.telem_broadcast(server_telem.tconn, req.encode('utf-8'))
+                        except:
+                            pass
                     elif req.find('telem') != -1 and req.find('@') != -1:
                         try:
-                            #self.ts.send(req.encode('utf-8'))
                             if req.split('@')[0] in self.dict:
                                 fff = req.split('@')[1]
                                 fff = json.loads(fff)
                                 self.dict[req.split('@')[0]](fff)
                         except:
-                            print(''), ''
+                            pass
                     elif req.find('@') != -1:
                         if req.split('@')[0] in self.dict:
                             fff = req.split('@')[1]
@@ -114,8 +114,6 @@ class JServer:
                             self.dict[req.split('@')[0]](fff)
                     else:
                         print("NOT RECOGNIZED! {}".format(req))
-                        self.conn.close()
-                        self.conn = None
                 except Exception as errr:
                     print('GET DATA ERROR {}'.format(errr))
 
@@ -142,4 +140,4 @@ class JServer:
             del self.s
             del self.joy
         except:
-            print (''), ''
+            pass

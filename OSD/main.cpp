@@ -1,11 +1,15 @@
 // ****************SETTINGS******************
-#define SCREENSIZE          Size(1366, 768)
-#define SCREENPOS           Point(0, 0)
+#define CAMID                          0
 
-#define SERVERIP             "127.0.0.1"
-#define SERVERPORT         59666
+#define SCREENSIZE                 Size(1366, 768)
+#define SCREENPOS                  Point(0, 0)
 
-#define CAMID                  0
+#define SERVERIP                     "127.0.0.1"
+#define SERVERPORT               59666
+
+#define OSDFONT                     FONT_HERSHEY_SIMPLEX
+#define OSDFONTCLR              Scalar(0, 255, 100)
+#define OSDFONTSIZE             1.0
 // ******************************************
 
 #define _CRT_SECURE_NO_WARNINGS
@@ -21,18 +25,23 @@
 #include <opencv2\core.hpp>
 #include <opencv\cv.h>
 #include <iostream>
-#include <vector>
+#include "tclient.h"
 #include <thread>
 #include <time.h>
-#include "tclient.h"
+#include <vector>
 #include <windows.h>
 
 using namespace std;
 using namespace cv;
 
 const char* cw = "xxxxxxxxxxxxx";
+vector <string> telem;
 VideoCapture vcap;
 Mat img, _img;
+
+double lasttime;
+double fps = 0.0;
+int c = 0;
 
 double millis() {
     SYSTEMTIME st;
@@ -56,18 +65,6 @@ Mat getCam() {
     return a;
 }
 
-void update1() {
-    putText(img, to_string(123.123456), Point2f(10, 30), FONT_HERSHEY_SCRIPT_SIMPLEX, double(1), Scalar::all(255), 3, 8);
-}
-
-void update2() {
-    putText(img, to_string(123.123456), Point2f(10, 30), FONT_HERSHEY_SCRIPT_SIMPLEX, double(1), Scalar::all(255), 3, 8);
-}
-
-void update(){
-    (CAMID == 0 ? update1 : update2)();
-}
-
 void prepareWindow(){
     cw = (CAMID == 0 ? "First camera" : "Second camera");
     namedWindow(cw, WND_PROP_FULLSCREEN);
@@ -75,20 +72,64 @@ void prepareWindow(){
     cvMoveWindow(cw, SCREENPOS.x, SCREENPOS.y);
 }
 
-void newTelem(vector <string>){
-
+vector <string> parse(string s){
+    vector <string> res;
+    string delimiter = "@";
+    string token;
+    size_t pos = 0;
+    while ((pos = s.find(delimiter)) != string::npos) {
+        token = s.substr(0, pos);
+        res.push_back(token);
+        s.erase(0, pos + delimiter.length());
+    }
+    res.push_back(s);
+    return res;
 }
+
+void newTelem(string in){
+    telem = parse(in);
+}
+
+void putText(string text, Point2f point){
+    putText(img, text, point, OSDFONT, OSDFONTSIZE, OSDFONTCLR, 1);
+}
+
+void update1() {
+    putText("Altitude: " + telem[T_ALT], Point2f(10, 30));
+    putText("FPS: " + to_string(fps), Point2f(10, 760));
+}
+
+void update2() {
+    putText("Altitude: " + telem[T_ALT], Point2f(10, 30));
+    putText("FPS: " + to_string(fps), Point2f(10, 760));
+}
+
+void update(){
+    (CAMID == 0 ? update1 : update2)();
+    if(c % 50){
+        fps = 50.0 / lasttime;
+        lasttime = millis();
+        c = 0;
+
+        cout << "FPS: " << fps << endl;
+    }
+    c++;
+}
+
 
 int main()
 {
+    printf("We all will die!!!\n\n");
+
     socket_init(SERVERIP);
     thread serverthr(socket_work, s, newTelem);
 
     prepareWindow();
 
     img = getCam();
+    lasttime = millis();
     while (true) {
-        thread thr(update2);
+        thread thr(update);
         _img = getCam();
         thr.join();
         try {

@@ -11,12 +11,12 @@ import time
 def newTelem(x):
     cu.armed = x['armed']
 
-rc = RC(33)
+rc = RC(1)
 server = JServer({'telem': newTelem})
 cu = CopterUtils(rc, server)
 
 while not server.isCliennt():
-    print 'waiting'
+    print '', ''
 
 thr = 1000
 tConst = 10
@@ -64,7 +64,7 @@ while 1:
                     thr += (0 if (thr + tConst) > 2000 else tConst)
 
                 z = rc.translate(axis[2], -1.0, 1.0, 1000.0, 2000.0)
-                #print '{0},{1},{2},{3}'.format(j, i, thr, z)
+                #  '{0},{1},{2},{3}'.format(j, i, thr, z)
                 rc.SendRC(2, j, False)
                 rc.SendRC(1, i, False)
                 rc.SendRC(3, thr, False)

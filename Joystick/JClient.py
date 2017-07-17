@@ -74,6 +74,7 @@ class JClient:
             except:
                 print('getDataAsync - Exception')
 
+
     def sendTelemetry(self, telem):
         try:
             telem = str(JavaScriptSerializer().Serialize(telem))
@@ -82,3 +83,13 @@ class JClient:
             self.s.send(telem)
         except:
             print('sendTelemetry - Exception')
+
+    def sendTelemetryx(self, telem):
+        try:
+            #telem = str(JavaScriptSerializer().Serialize(telem))
+            telem = '@'.join(map(str, telem))
+            telem = "telemx@" + telem
+            telem = telem.encode('utf-8')
+            self.s.send(telem)
+        except:
+            print('sendTelemetryx - Exception')

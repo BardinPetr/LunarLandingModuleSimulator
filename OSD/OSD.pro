@@ -3,8 +3,7 @@ CONFIG += console c++11
 CONFIG -= app_bundle
 CONFIG -= qt
 
-SOURCES += main.cpp \
-    tclient.cpp
+SOURCES += main.cpp
 
 INCLUDEPATH += "D:\opencv3\build\install\include"
 

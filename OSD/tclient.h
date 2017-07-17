@@ -12,28 +12,28 @@
 #include <algorithm>
 #include <vector>
 
-typedef void (*TelemHandler)(std::vector <std::string>);
+typedef void (*TelemHandler)(std::string);
 
 using namespace std;
 
+struct sockaddr_in server;
 TelemHandler th;
 WSADATA wsa;
 SOCKET s;
-struct sockaddr_in server;
 
 void socket_init(const char* addr)
 {
     printf("Initialising Winsock...");
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
     {
-        printf("Failed. Error Code : %d", WSAGetLastError());
+        printf("Failed. Error Code : %d ;-)", WSAGetLastError());
         return;
     }
 
     printf("Initialised.\n");
     if ((s = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
     {
-        printf("Could not create socket : %d", WSAGetLastError());
+        printf("Could not create socket : %d ;-)", WSAGetLastError());
     }
 
     printf("Socket created.\n");
@@ -43,11 +43,12 @@ void socket_init(const char* addr)
     server.sin_port = htons(59666);
     if (connect(s, (struct sockaddr *)&server, sizeof(server)) < 0)
     {
-        printf("Connect error. :)\n");
+        printf("Connect error. ;-)\n");
         getchar();
         return;
     }
-    printf("Connected!!! :(\n");
+    printf("Connected. :(\n\n");
+    printf("Everything is bad!!!\n\n");
 }
 
 void socket_stop(){
@@ -56,17 +57,49 @@ void socket_stop(){
 }
 
 void socket_work(SOCKET sc, TelemHandler th){
-    char recv_msg[100];
+    char recv_msg[2000];
     int recv_size;
 
     while (1) {
-        memset(recv_msg, NULL, 100);
-        if ((recv_size = recv(sc, recv_msg, 100, 0)) != SOCKET_ERROR) {
+        memset(recv_msg, NULL, 2000);
+        if ((recv_size = recv(sc, recv_msg, 2000, 0)) != SOCKET_ERROR) {
             if(recv_msg[0] != NULL){
-                cout << recv_msg << endl;
+                std::string s = recv_msg;
+                th(s);
             }
         }
     }
 }
+
+
+enum{
+    T_ROLL,
+    T_PITCH,
+    T_YAW,
+    T_LAT,
+    T_LNG,
+    T_ALT,
+    T_GPSST,
+    T_GPSSATCNT,
+    T_GSPEED,
+    T_VSPEED,
+    T_AX,
+    T_AY,
+    T_AZ,
+    T_GX,
+    T_GY,
+    T_GZ,
+    T_MX,
+    T_MY,
+    T_MZ,
+    T_MODE,
+    T_BATT,
+    T_BATTREM,
+    T_BATTCUR,
+    T_ARMED,
+    T_LANDGEAR,
+    T_SONAR,
+    T_RESERVED
+};
 
 #endif // TCLIENT_H
