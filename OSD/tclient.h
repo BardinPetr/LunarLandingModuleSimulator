@@ -21,19 +21,20 @@ TelemHandler th;
 WSADATA wsa;
 SOCKET s;
 
-void socket_init(const char* addr)
+bool socket_init(const char* addr)
 {
     printf("Initialising Winsock...");
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
     {
-        printf("Failed. Error Code : %d ;-)", WSAGetLastError());
-        return;
+        printf("Failed. Error Code : %d ;)\nTo quit press enter...", WSAGetLastError());
+        return 1;
     }
 
     printf("Initialised.\n");
     if ((s = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
     {
-        printf("Could not create socket : %d ;-)", WSAGetLastError());
+        printf("Could not create socket : %d ;)\nTo quit press enter...", WSAGetLastError());
+        return 1;
     }
 
     printf("Socket created.\n");
@@ -43,12 +44,12 @@ void socket_init(const char* addr)
     server.sin_port = htons(59666);
     if (connect(s, (struct sockaddr *)&server, sizeof(server)) < 0)
     {
-        printf("Connect error. ;-)\n");
-        getchar();
-        return;
+        printf("Connect error. ;)\nTo quit press enter...");
+        return 1;
     }
     printf("Connected. :(\n\n");
-    printf("Everything is bad!!!\n\n");
+    //("Everything is bad!!!\n\n");
+    return 0;
 }
 
 void socket_stop(){
@@ -56,11 +57,11 @@ void socket_stop(){
     WSACleanup();
 }
 
-void socket_work(SOCKET sc, TelemHandler th){
+void socket_work(SOCKET sc, TelemHandler th){//, bool fff){
     char recv_msg[2000];
     int recv_size;
 
-    while (1) {
+    while (true) {
         memset(recv_msg, NULL, 2000);
         if ((recv_size = recv(sc, recv_msg, 2000, 0)) != SOCKET_ERROR) {
             if(recv_msg[0] != NULL){

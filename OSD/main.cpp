@@ -1,4 +1,5 @@
 // ****************SETTINGS******************
+#define CAMTYPE                      0
 #define CAMID                          0
 
 #define SCREENSIZE                 Size(1366, 768)
@@ -7,7 +8,7 @@
 #define SERVERIP                     "127.0.0.1"
 #define SERVERPORT               59666
 
-#define OSDFONT                     FONT_HERSHEY_SIMPLEX
+#define OSDFONT                    FONT_HERSHEY_SIMPLEX
 #define OSDFONTCLR              Scalar(0, 255, 100)
 #define OSDFONTSIZE             1.0
 // ******************************************
@@ -25,10 +26,14 @@
 #include <opencv2\core.hpp>
 #include <opencv\cv.h>
 #include <iostream>
+#include <unistd.h>
+#include <signal.h>
 #include "tclient.h"
+#include <stdlib.h>
+#include <stdio.h>
 #include <thread>
-#include <time.h>
 #include <vector>
+#include <time.h>
 #include <windows.h>
 
 using namespace std;
@@ -42,6 +47,8 @@ Mat img, _img;
 double lasttime;
 double fps = 0.0;
 int c = 0;
+
+bool fff = true;
 
 double millis() {
     SYSTEMTIME st;
@@ -94,6 +101,14 @@ void putText(string text, Point2f point){
     putText(img, text, point, OSDFONT, OSDFONTSIZE, OSDFONTCLR, 1);
 }
 
+BOOL WINAPI consoleHandler(DWORD signal) {
+    if (signal == CTRL_C_EVENT){
+        printf("Ctrl-C handled\n");
+        fff = false;
+    }
+    return true;
+}
+
 void update1() {
     putText("Altitude: " + telem[T_ALT], Point2f(10, 30));
     putText("FPS: " + to_string(fps), Point2f(10, 760));
@@ -119,29 +134,42 @@ void update(){
 
 int main()
 {
-    printf("We all will die!!!\n\n");
+    //printf("We all will die!!!\n\n");
+    std::fill(telem.begin(), telem.end(), "-1111");
 
-    socket_init(SERVERIP);
-    thread serverthr(socket_work, s, newTelem);
-
-    prepareWindow();
-
-    img = getCam();
-    lasttime = millis();
-    while (true) {
-        thread thr(update);
-        _img = getCam();
-        thr.join();
-        try {
-            imshow(cw, img);
-        }
-        catch (Exception) {}
-        img = _img;
-
-        if (waitKey(1) == 13) break;
+    if (!SetConsoleCtrlHandler(consoleHandler, TRUE)) {
+        printf("\nERROR: Could not set control handler");
+        return 1;
     }
-    cvDestroyAllWindows();
-    serverthr.join();
+
+    bool init = !socket_init(SERVERIP);
+    if(init){
+        thread serverthr(socket_work, s, newTelem);//, &fff);
+
+        prepareWindow();
+
+        img = getCam();
+        lasttime = millis();
+        while (true) {
+            cout<<telem[T_RESERVED];
+            if(telem[T_RESERVED] == "666"){
+                thread thr(update);
+                _img = getCam();
+                thr.join();
+                try {
+                    imshow(cw, img);
+                }
+                catch (Exception) {}
+                img = _img;
+
+                if (waitKey(1) == 13) break;
+                fff = true;
+            }
+        }
+        fff = false;
+        cvDestroyAllWindows();
+        serverthr.join();
+    }
     socket_stop();
     return 0;
 }
