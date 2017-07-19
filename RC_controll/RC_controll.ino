@@ -6,16 +6,15 @@
 #define MIN   1000
 #define MAX   2000
 
-#define SERVOMIN 0
-#define SERVOMAX 0
+#define SERVOMIN 1000
+#define SERVOMAX 2000
 
 
 #include "alexmos.h"
-#include <Servo.h>
-//#include "Servo.h"
+#include <ServoTimer2.h>
 
-Servo chan[8];
-Servo servo;
+ServoTimer2 chan[4];
+ServoTimer2 servo;
 
 String input = "";
 bool stringComplete = false;
@@ -30,17 +29,12 @@ int g = 0;
 int h = 0;
 
 void setup() {
-  chan[ ROLL ].attach(3);
-  chan[ PITCH].attach(9);
-  chan[ THR  ].attach(10);
-  chan[ YAW  ].attach(11);
-
-  servo.attach(5);
-
   Serial.begin(57600);
   input.reserve(200);
 
   gimbal_setup();
+
+  attach();
 }
 
 void loop() {
@@ -48,15 +42,15 @@ void loop() {
      radio (int) - 1000--2000
      gimbal(int) - 0--40
      servo (int) - 0--1
-     radio1@radio2@radio3@radio4@gimpalROLL@gimpalPITCH@gimpalYAW@servo
+     !radio1@radio2@radio3@radio4@gimpalROLL@gimpalPITCH@gimpalYAW@servo
 
      Example:
-     1500@1500@1000@1500@0@0@0@0
-     1500@1500@1000@1500@20@-20@20@0
+     !1500@1500@1000@1500@0@0@0@0
+     !1500@1500@1000@1500@20@-20@20@0
   */
   if (stringComplete) {
     if (input.startsWith("!")) {
-      input = input.substring(1, 21);
+      input = input.substring(1, input.indexOf('\r'));
       Serial.println(input);
       int _a = getValue(input, '@', 0).toInt();
       int _b = getValue(input, '@', 1).toInt();
@@ -68,7 +62,15 @@ void loop() {
       int _g = getValue(input, '@', 6).toInt();
 
       int _h = getValue(input, '@', 7).toInt();
-
+      Serial.print(_a);
+      Serial.print(" ");
+      Serial.print(_e);
+      Serial.print(" ");
+      Serial.print(_f);
+      Serial.print(" ");
+      Serial.print(_g);
+      Serial.print(" ");
+      Serial.println(_h);
       if (_a >= 1000 && _a <= 2000 &&
           _b >= 1000 && _b <= 2000 &&
           _c >= 1000 && _c <= 2000 &&
@@ -90,18 +92,43 @@ void loop() {
     stringComplete = false;
   }
   else {
+    attach();
+    servo.write((h ? SERVOMIN : SERVOMAX));
+
     setRC(PITCH,  a);
     setRC(ROLL,   b);
     setRC(THR,    c);
     setRC(YAW,    d);
-
+    delay(20);
+    detach();
+    /*
+     * надо затестить с set_spd после detach!!!!
+     */
     set_spd(ROLL, e);
     set_spd(PITCH, f);
     set_spd(YAW, g);
-
-    servo.write((h ? SERVOMIN : SERVOMAX));
-    delay(10);
   }
+
+  gimbal_run();
+  delay(1000);
+}
+
+void attach() {
+  chan[ ROLL ].attach(3);
+  chan[ PITCH].attach(9);
+  chan[ THR  ].attach(10);
+  chan[ YAW  ].attach(11);
+
+  servo.attach(6);
+}
+
+void detach() {
+  chan[ ROLL ].detach();
+  chan[ PITCH].detach();
+  chan[ THR  ].detach();
+  chan[ YAW  ].detach();
+
+  servo.detach();
 }
 
 void arm() {
@@ -129,7 +156,7 @@ String getValue(String data, char separator, int index)
 }
 
 void setRC(int id, int f) {
-  chan[id].writeMicroseconds(f);
+  chan[id].write(f); //Microseconds(f);
 }
 
 void serialEvent() {

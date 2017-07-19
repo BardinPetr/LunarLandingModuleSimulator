@@ -1,11 +1,11 @@
-#include <SoftwareSerial.h>
+#include <AltSoftSerial.h>
 #include <SBGC_Arduino.h>
 #include <inttypes.h>
 #include <SBGC.h>
 
 #define SBGC_CMD_DELAY 20
 
-SoftwareSerial serial(6, 7);
+AltSoftSerial serial;
 SBGC_cmd_control_t cc = { 0, 0, 0, 0, 0, 0, 0 };
 
 static uint16_t cur_time_ms, low_rate_time_ms, last_cmd_time_ms, rt_req_last_time_ms, joy_last_time_ms;
@@ -30,15 +30,17 @@ void request();
 void gimbal_setup() {
   serial.begin(115200);
   SBGC_Demo_setup(&serial);
+  blink_led(4);
 }
 
 void gimbal_run() {
+  cur_time_ms = millis();
   process();
   request();
 }
 
 void request() {
-  if ((cur_time_ms - rt_req_last_time_ms) > 30) {
+  if ((cur_time_ms - rt_req_last_time_ms) > 10) {
     SerialCommand cmd;
     if (is_connected) {
       cmd.init(SBGC_CMD_REALTIME_DATA);
@@ -77,7 +79,7 @@ void send_data() {
   String s = "";
   s += String(rt_data.imu_angle[ROLL]) + "@";
   s += String(rt_data.imu_angle[PITCH]) + "@";
-  s += String(rt_data.imu_angle[YAW]) + "\r";
+  s += String(rt_data.imu_angle[YAW]) + "\n";
   Serial.print(s);
 }
 
