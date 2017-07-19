@@ -90,6 +90,7 @@ class JClient:
             telem = '@'.join(map(str, telem))
             telem = "telemx@" + telem
             telem = telem.encode('utf-8')
+            #print telem
             self.s.send(telem)
         except:
             print('sendTelemetryx - Exception')

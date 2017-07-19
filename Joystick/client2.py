@@ -29,8 +29,9 @@ print('Started')
 0       1
     3 
 '''
-
+gimbal = [0.0, 0.0, 0.0]
 while 1:
+    sTime = time.time()
     cl.sendTelemetry({'roll': -cs.roll,
                       'pitch': cs.pitch,
                       'yaw': cs.yaw,
@@ -58,7 +59,9 @@ while 1:
                       'landgear': False,
                       'sonar': cs.sonarrange,
                       'reserved': 666 })
-    cl.sendTelemetryx([ -cs.roll,cs.pitch,cs.yaw,cs.lat,cs.lng,cs.alt,cs.gpsstatus,cs.satcount,cs.groundspeed,cs.verticalspeed,cs.ax,cs.ay,cs.az,cs.gx,cs.gy,cs.gz,cs.mx,cs.my,cs.mz,cs.mode,cs.battery_voltage,cs.battery_remaining,cs.current,cs.armed,False,cs.sonarrange,666 ])
+    print round(cs.lat, 4)
+    cl.sendTelemetryx([ -cs.roll,cs.pitch,cs.yaw,cs.lat,cs.lng,cs.alt,cs.gpsstatus,cs.satcount,cs.groundspeed,cs.verticalspeed,cs.ax,cs.ay,cs.az,cs.gx,cs.gy,cs.gz,cs.mx,cs.my,cs.mz,cs.mode,cs.battery_voltage,cs.battery_remaining,cs.current,cs.armed,False,cs.sonarrange])
+    #print('time: {}'.format(time.time() - sTime))
     Script.Sleep(20)
 
 del cl

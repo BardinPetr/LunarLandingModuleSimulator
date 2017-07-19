@@ -8,31 +8,25 @@ import socket
 import signal
 import time
 import json
+import sys
 
 millis = lambda: int(round(time.time() * 1000))
 
-class Killer:
-    kill_now = False
-    def __init__(self):
-        signal.signal(signal.SIGINT, self.exit_gracefully)
-        signal.signal(signal.SIGTERM, self.exit_gracefully)
-
-    def exit_gracefully(self, signum, frame):
-        self.kill_now = True
-
 class JServer:
-    def __init__(self, dict):
+    def __init__(self, dict, rc):
         print ('Starting server')
 
         self.s = None
         self.dict = dict
+        self.rc = rc
+
         try:
             self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.s.bind(('127.0.0.1', 59667))
             self.s.listen(1)
         except:
             print('Failed to start Server!')
-            self.__init__(dict)
+            self.__init__(dict, rc)
 
         self.joy = Joystick()
         self.tm = millis()
@@ -95,7 +89,9 @@ class JServer:
                         break
                     elif req.find('telemx') != -1 and req.find('@') != -1 and not req.find(':') != -1:
                         try:
-                            req = req[7:]
+                            req = str(req[7:])
+                            req += '@' + '@'.join(map(str, self.rc.gimbal)) + "@666"
+                            print req
                             server_telem.telem_broadcast(server_telem.tconn, req.encode('utf-8'))
                         except:
                             pass
@@ -139,5 +135,8 @@ class JServer:
             self.s.close()
             del self.s
             del self.joy
+            server_telem.run = False
+            server_telem.s.close()
+            server_telem.athr.join()
         except:
             pass
