@@ -4,8 +4,8 @@ import signal
 import time
 import json
 
-def accept(tc, s):
-    while 1:
+def accept(tc, s, run):
+    while run:
         print 'telem waiting'
         try:
             conn, addr = s.accept()
@@ -27,5 +27,6 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind(('127.0.0.1', 59666))
 s.listen(100)
 tconn = []
-athr = threading.Thread(target=accept, args=(tconn, s))
+run = True
+athr = threading.Thread(target=accept, args=(tconn, s, run))
 athr.start()

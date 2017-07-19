@@ -3,6 +3,10 @@ from JServer import JServer
 from video import Video
 from RC import RC
 import time
+import signal
+import time
+import json
+import sys
 
 #video = Video(False, False)
 #video.newTelemetry({'alt': 41, 'roll': 24, 'pitch':16, 'yaw': 56, 'tg': 40})
@@ -11,9 +15,19 @@ import time
 def newTelem(x):
     cu.armed = x['armed']
 
-rc = RC(1)
-server = JServer({'telem': newTelem})
+rc = RC(2)
+server = JServer({'telem': newTelem}, rc)
 cu = CopterUtils(rc, server)
+
+def signal_term_handler(signal, frame):
+    print 'got {}'.format(signal)
+    del server
+    del cu
+    del rc
+    sys.exit(0)
+signal.signal(signal.SIGTERM, signal_term_handler)
+signal.signal(signal.SIGINT, signal_term_handler)
+signal.signal(signal.SIGBREAK, signal_term_handler)
 
 while not server.isCliennt():
     print '', ''
