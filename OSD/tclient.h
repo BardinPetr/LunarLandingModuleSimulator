@@ -63,11 +63,16 @@ void socket_work(SOCKET sc, TelemHandler th){//, bool fff){
 
     while (true) {
         memset(recv_msg, NULL, 2000);
-        if ((recv_size = recv(sc, recv_msg, 2000, 0)) != SOCKET_ERROR) {
-            if(recv_msg[0] != NULL){
-                std::string s = recv_msg;
-                th(s);
+        try{
+            if ((recv_size = recv(sc, recv_msg, 2000, 0)) != SOCKET_ERROR) {
+                if(recv_msg[0] != NULL){
+                    std::string s = recv_msg;
+                    th(s);
+                }
             }
+        }
+        catch(std::exception){
+
         }
     }
 }
@@ -100,6 +105,9 @@ enum{
     T_ARMED,
     T_LANDGEAR,
     T_SONAR,
+    T_GROLL,
+    T_GPITCH,
+    T_GYAW,
     T_RESERVED
 };
 

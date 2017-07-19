@@ -111,12 +111,10 @@ BOOL WINAPI consoleHandler(DWORD signal) {
 
 void update1() {
     putText("Altitude: " + telem[T_ALT], Point2f(10, 30));
-    putText("FPS: " + to_string(fps), Point2f(10, 760));
 }
 
 void update2() {
     putText("Altitude: " + telem[T_ALT], Point2f(10, 30));
-    putText("FPS: " + to_string(fps), Point2f(10, 760));
 }
 
 void update(){
@@ -126,7 +124,7 @@ void update(){
         lasttime = millis();
         c = 0;
 
-        cout << "FPS: " << fps << endl;
+        //cout << "FPS: " << fps << endl;
     }
     c++;
 }
@@ -150,8 +148,7 @@ int main()
 
         img = getCam();
         lasttime = millis();
-        while (true) {
-            cout<<telem[T_RESERVED];
+        while (fff) {
             if(telem[T_RESERVED] == "666"){
                 thread thr(update);
                 _img = getCam();
@@ -159,11 +156,10 @@ int main()
                 try {
                     imshow(cw, img);
                 }
-                catch (Exception) {}
+                catch (Exception) { cout << 4; }
                 img = _img;
 
                 if (waitKey(1) == 13) break;
-                fff = true;
             }
         }
         fff = false;
