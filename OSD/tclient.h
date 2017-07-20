@@ -103,11 +103,12 @@ enum{
     T_BATTREM,
     T_BATTCUR,
     T_ARMED,
-    T_LANDGEAR,
     T_SONAR,
     T_GROLL,
     T_GPITCH,
     T_GYAW,
+    T_LANDGEAR,
+    T_LAND,
     T_RESERVED
 };
 

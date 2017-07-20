@@ -97,25 +97,76 @@ void newTelem(string in){
     telem = parse(in);
 }
 
-void putText(string text, Point2f point){
-    putText(img, text, point, OSDFONT, OSDFONTSIZE, OSDFONTCLR, 1);
+void putText(string text, Point2f point, CvScalar clr = OSDFONTCLR, double size = OSDFONTSIZE){
+    putText(img, text, point, OSDFONT, size, clr, 2);
 }
 
 BOOL WINAPI consoleHandler(DWORD signal) {
     if (signal == CTRL_C_EVENT){
         printf("Ctrl-C handled\n");
         fff = false;
+        cvDestroyAllWindows();
+        exit(0);
     }
     return true;
 }
 
 void update1() {
-    putText("Altitude: " + telem[T_ALT], Point2f(10, 30));
+    putText("Altitude: " + telem[T_SONAR], Point2f(60, 50));
+
+    putText("Cam Roll:  " + telem[T_GROLL], Point2f(1100, 50), OSDFONTCLR, 0.9);
+    putText("Cam Pitch: " + telem[T_GPITCH], Point2f(1100, 80), OSDFONTCLR, 0.9);
+    putText("Cam Yaw:  " + telem[T_GYAW], Point2f(1100, 110), OSDFONTCLR, 0.9);
+
+    putText("Roll:  " + telem[T_ROLL], Point2f(990, 610));
+    putText("Pitch: " + telem[T_PITCH], Point2f(990, 640));
+    putText("Yaw:  " + telem[T_YAW], Point2f(990, 670));
+
+    putText("Vertical speed: " + telem[T_VSPEED], Point2f(990, 720));
+    putText("Ground speed: " + telem[T_GSPEED], Point2f(990, 750));
+
+    int r = (telem[T_LANDGEAR][0] == '0' ? 0 : 240);
+    int g = (r == 0 ? 240 : 0);
+    int _r = (telem[T_LAND][0] == '0' ? 0 : 240);
+    int _g = (_r == 0 ? 240 : 0);
+
+    rectangle(img, CvPoint(60,624), CvPoint(260, 680), CvScalar(0, 180, 80), 4);
+    rectangle(img, CvPoint(64,628), CvPoint(256, 676), CvScalar(0, g, r), -1);
+
+    rectangle(img, CvPoint(60,690), CvPoint(260, 747), CvScalar(0, 160, 80), 4);
+    rectangle(img, CvPoint(64,694), CvPoint(256, 743), CvScalar(0, _g, _r), -1);
+
+    putText("LAND", Point2f(125, 660), CvScalar(0, 0, 0), 0.9);
+    putText("LANDING GEAR", Point2f(80, 727), CvScalar(0, 0, 0), 0.7);
 }
 
 void update2() {
-    putText("Altitude: " + telem[T_ALT], Point2f(10, 30));
-}
+    putText("Altitude: " + telem[T_SONAR], Point2f(60, 50));
+
+    putText("Cam Roll:  " + telem[T_GROLL], Point2f(1100, 50), OSDFONTCLR, 0.9);
+    putText("Cam Pitch: " + telem[T_GPITCH], Point2f(1100, 80), OSDFONTCLR, 0.9);
+    putText("Cam Yaw:  " + telem[T_GYAW], Point2f(1100, 110), OSDFONTCLR, 0.9);
+
+    putText("Roll:  " + telem[T_ROLL], Point2f(990, 610));
+    putText("Pitch: " + telem[T_PITCH], Point2f(990, 640));
+    putText("Yaw:  " + telem[T_YAW], Point2f(990, 670));
+
+    putText("Vertical speed: " + telem[T_VSPEED], Point2f(990, 720));
+    putText("Ground speed: " + telem[T_GSPEED], Point2f(990, 750));
+
+    int r = (telem[T_LANDGEAR][0] == '0' ? 0 : 240);
+    int g = (r == 0 ? 240 : 0);
+    int _r = (telem[T_LAND][0] == '0' ? 0 : 240);
+    int _g = (_r == 0 ? 240 : 0);
+
+    rectangle(img, CvPoint(60,624), CvPoint(260, 680), CvScalar(0, 180, 80), 4);
+    rectangle(img, CvPoint(64,628), CvPoint(256, 676), CvScalar(0, g, r), -1);
+
+    rectangle(img, CvPoint(60,690), CvPoint(260, 747), CvScalar(0, 160, 80), 4);
+    rectangle(img, CvPoint(64,694), CvPoint(256, 743), CvScalar(0, _g, _r), -1);
+
+    putText("LAND", Point2f(125, 660), CvScalar(0, 0, 0), 0.9);
+    putText("LANDING GEAR", Point2f(80, 727), CvScalar(0, 0, 0), 0.7);}
 
 void update(){
     (CAMID == 0 ? update1 : update2)();
@@ -158,9 +209,16 @@ int main()
                 }
                 catch (Exception) { cout << 4; }
                 img = _img;
-
-                if (waitKey(1) == 13) break;
             }
+            else{
+                _img = getCam();
+                try {
+                    imshow(cw, img);
+                }
+                catch (Exception) { cout << 4; }
+                img = _img;
+            }
+            if (waitKey(1) == 13) break;
         }
         fff = false;
         cvDestroyAllWindows();
