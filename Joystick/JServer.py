@@ -90,9 +90,9 @@ class JServer:
                     elif req.find('telemx') != -1 and req.find('@') != -1 and not req.find(':') != -1:
                         try:
                             req = str(req[7:])
-                            req += '@' + '@'.join(map(str, self.rc.gimbal)) + "@666"
-                            print req
+                            req += '@' + '@'.join(map(str, self.rc._send)) + "@666"
                             server_telem.telem_broadcast(server_telem.tconn, req.encode('utf-8'))
+                            print req
                         except:
                             pass
                     elif req.find('telem') != -1 and req.find('@') != -1:

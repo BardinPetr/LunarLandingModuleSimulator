@@ -15,15 +15,17 @@ class RC:
 
         self.r = True
 
+        self.gimbal = [0, 0, 0]
+        self._send = [0, 0, 0, 0, 0]
+
         self.pingt = threading.Thread(target=self.run)
         self.pingt.start()
-
-        self.gimbal = [0.0, 0.0, 0.0]
 
     def run(self):
         while self.r:
             line = self.ser.readline()
-            self.gimbal = line.split('@')
+            self._send = line.split('@')
+            self.gimbal = list(map(int, self._send[1:4]))
 
     def SendRC(self, id, val, writenow = False):
         self.chan[id] = str(val)

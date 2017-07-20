@@ -56,11 +56,8 @@ while 1:
                       'battrem': cs.battery_remaining,
                       'battcur': cs.current,
                       'armed': cs.armed,
-                      'landgear': False,
-                      'sonar': cs.sonarrange,
                       'reserved': 666 })
-    print round(cs.lat, 4)
-    cl.sendTelemetryx([ -cs.roll,cs.pitch,cs.yaw,cs.lat,cs.lng,cs.alt,cs.gpsstatus,cs.satcount,cs.groundspeed,cs.verticalspeed,cs.ax,cs.ay,cs.az,cs.gx,cs.gy,cs.gz,cs.mx,cs.my,cs.mz,cs.mode,cs.battery_voltage,cs.battery_remaining,cs.current,cs.armed,False,cs.sonarrange])
+    cl.sendTelemetryx([ round(-cs.roll, 2),round(cs.pitch, 2),round(cs.yaw, 2),cs.lat,cs.lng,cs.alt,cs.gpsstatus,cs.satcount,round(cs.groundspeed, 2),round(cs.verticalspeed, 2),round(cs.ax, 2),round(cs.ay, 2),round(cs.az, 2),round(cs.gx, 2),round(cs.gy, 2),round(cs.gz, 2),cs.mx,cs.my,cs.mz,cs.mode,cs.battery_voltage,cs.battery_remaining,cs.current,cs.armed])
     #print('time: {}'.format(time.time() - sTime))
     Script.Sleep(20)
 
