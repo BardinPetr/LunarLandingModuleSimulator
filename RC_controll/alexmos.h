@@ -1,11 +1,16 @@
-#include <AltSoftSerial.h>
+#include "Ultrasonic.h"
 #include <SBGC_Arduino.h>
 #include <inttypes.h>
 #include <SBGC.h>
 
 #define SBGC_CMD_DELAY 20
+#define serial Serial1
 
-AltSoftSerial serial;
+#define LAND 20
+#define LANDGEAR_OPEN 50
+
+Ultrasonic us(4, 5);
+
 SBGC_cmd_control_t cc = { 0, 0, 0, 0, 0, 0, 0 };
 
 static uint16_t cur_time_ms, low_rate_time_ms, last_cmd_time_ms, rt_req_last_time_ms, joy_last_time_ms;
@@ -23,9 +28,10 @@ int iter = 0;
 void set_spd(int id, int _speed);
 int units_to_degrees(int x);
 void fix_rtdata();
-void send_data();
-void process();
+void send_data(int h);
+void process(int h);
 void request();
+int sonar();
 
 void gimbal_setup() {
   serial.begin(115200);
@@ -33,9 +39,9 @@ void gimbal_setup() {
   blink_led(4);
 }
 
-void gimbal_run() {
+void gimbal_run(int h) {
   cur_time_ms = millis();
-  process();
+  process(h);
   request();
 }
 
@@ -56,7 +62,7 @@ void set_connected() {
   is_connected = 1;
 }
 
-void process() {
+void process(int h) {
   while (sbgc_parser.read_cmd()) {
     if (!is_connected) set_connected();
 
@@ -69,18 +75,25 @@ void process() {
       case SBGC_CMD_REALTIME_DATA_4:
         error = SBGC_cmd_realtime_data_unpack(rt_data, cmd);
         fix_rtdata();
-        send_data();
+        send_data(h);
         break;
     }
   }
 }
 
-void send_data() {
+void send_data(int h) {
   String s = "";
+  s += String(sonar()) + "@";
   s += String(rt_data.imu_angle[ROLL]) + "@";
   s += String(rt_data.imu_angle[PITCH]) + "@";
-  s += String(rt_data.imu_angle[YAW]) + "\n";
+  s += String(rt_data.imu_angle[YAW]) + "@";
+  s += String(h) + "@";
+  s += String((sonar() < LAND ? 1 : 0)) + "\n";
   Serial.print(s);
+}
+
+int sonar(){
+  return us.Ranging(CM);
 }
 
 void fix_rtdata() {
